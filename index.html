@@ -77,6 +77,51 @@
 
     </section>
     <!-- END ADMIN SECTION -->
+
+    <!-- QUIZ SECTION -->
+    <section class="quiz-container">
+        <div class="quiz-wrapper">
+            <h2 id="asked-question-list"></h2>
+
+            <div class="instant-answer-container">
+                <img src="images/happy.png" alt="happy emoji" id="emotion">
+                <div class="instant-answer-wrapper">
+                    <p id="instant-answer-text">This is a correct answer</p>
+                    <button id="next-question-btn">Next</button>
+                </div>
+            </div>
+
+            <div class="quiz-options-wrapper">
+                <div class="choice-0"><span class="choice-0">A</span><p class="choice-0">test1</p></div>
+                <div class="choice-1"><span class="choice-1">B</span><p class="choice-1">test2</p></div>
+                <div class="choice-2"><span class="choice-2">C</span><p class="choice-2">test3</p></div>
+                <div class="choice-3"><span class="choice-3">D</span><p class="choice-3">test4</p></div>
+
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="progressBar">
+            <p id="progress">2/20</p>
+            <progress value="30" max="100"></progress>
+        </div>
+    </section>
+    <!-- END QUIZ SECTION -->
+
+
+
+    <!-- START FINAL RESULT PAGE -->
+    <section class="final-result-container">
+        <div class="final-result-wrapper">
+            <div class="final-result">
+                <button id="final-logout-btn"></button>
+                <h2 id="final-score-text">Nick Doe -- 56</h2>
+            </div>
+        </div>
+    </section>
+    <!-- END FINAL RESULT PAGE -->
+
+    
     <script src="script.js"></script>
 </body>
 
