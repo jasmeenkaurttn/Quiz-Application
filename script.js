@@ -146,6 +146,31 @@ var UIController = (function() {
 
                 domItems.insertedQuestionWrapper.insertAdjacentHTML('afterbegin', questHTML);
             }
+        },
+        editQuestionList: function(event, storageQuestList) {
+
+            var getId, getStorageQuestList, foundItem, placeInArr, optionHTML;
+
+            if('question-'.indexOf(event.target.id)){
+                getId = parseInt(event.target.id.split('-')[1]);
+
+                getStorageQuestList = storageQuestList.getQuestionCollection();
+
+                for(var i = 0; i < getStorageQuestList.length; i++) {
+                    if(getStorageQuestList[i].id === getId) {
+                        foundItem = getStorageQuestList[i];
+
+                        placeInArr = 1;
+                    }
+                }
+                // console.log(foundItem, placeInArr);
+                domItems.newQuestText.value = foundItem.questionText;
+                domItems.adminOptionsContainer.innerHTML = "";
+
+                for(var x = 0; x < foundItem.options.length; x++) {
+                    optionHTML += '<div class="admin-options-wrapper"><input type="radio" class="admin-option-0" name="answer" value="0"><input type="text" class="admin-option admin-option-0" value=""></div>';
+                }
+            }
         }
     };
 })();
@@ -167,4 +192,8 @@ var controller = (function(quizCtrl, UICtrl) {
             UICtrl.createQuestinList(quizController.getQuestionLocalStorage);
         }
     });
+
+    selectedDomItems.insertedQuestionWrapper.addEventListener('click', function(e) {
+        UICtrl.editQuestionList(e, quizController.getQuestionLocalStorage);
+    })
 })(quizController, UIController);
