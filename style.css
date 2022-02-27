@@ -227,8 +227,8 @@ div.forms-wrapper input[type="text"]:focus {
 
 div.forms-wrapper input[type="radio"] {
     position: absolute;
-    left: 60px;
-    top: 15px;
+    left: 130px;
+    /* top: 220px; */
 }
 
 #question-insert-btn {
