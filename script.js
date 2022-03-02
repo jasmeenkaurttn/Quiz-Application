@@ -106,6 +106,14 @@ var quizController = (function () {
                 alert('Please, Insert Question!')
                 return false;
             }
+        },
+
+        checkAnswer: function(ans) {
+            if(questionLocalStorage.getQuestionCollection()[quizProgress.questionIndex].correctAnswer === ans.textContent) {
+                return true;
+            } else{
+                return false;
+            }
         }
     }
 })();
@@ -127,7 +135,9 @@ var UIController = (function () {
 
         // ***************************Quiz Section Elements********
         askedQuestText: document.getElementById("asked-question-text"),
-        quizOptionsWrapper: document.querySelector('.quiz-options-wrapper')
+        quizOptionsWrapper: document.querySelector('.quiz-options-wrapper'),
+        progressBar: document.querySelector("progress"),
+        progressPar:  document.getElementById("progress")
     };
 
     return {
@@ -305,6 +315,15 @@ var UIController = (function () {
                     domItems.quizOptionsWrapper.insertAdjacentHTML('beforeend', newOptionHTML);
                 }
             }
+        },
+
+        displayProgress: function(storageQuestList, progress) {
+            
+            domItems.progressBar.max = storageQuestList.getQuestionCollection().length;
+
+            domItems.progressBar.value = progress.questionIndex + 1;
+
+            domItems.progressPar.textContent = (progress.questionIndex + 1) + '/' + storageQuestList.getQuestionCollection().length;
         }
     };
 })();
@@ -336,4 +355,21 @@ var controller = (function (quizCtrl, UICtrl) {
     });
 
     UICtrl.displayQuestion(quizController.getQuestionLocalStorage, quizCtrl.getQuizProgress);
+
+    UICtrl.displayProgress(quizCtrl.getQuestionLocalStorage, quizController.getQuizProgress);
+
+    selectedDomItems.quizOptionsWrapper.addEventListener('click', function(e) {
+        var updatedOptionsDiv = selectedDomItems.quizOptionsWrapper.querySelectorAll('div');
+
+        for(var i = 0; i < updatedOptionsDiv.length; i++) {
+
+            if(e.target.className === 'choice-' + i) {
+                // console.log(e.target.className);
+                var answer = document.querySelector('.quiz-options-wrapper div p.' + e.target.className);
+
+                quizCtrl.checkAnswer(answer);
+            }
+        }
+    })
+
 })(quizController, UIController);
