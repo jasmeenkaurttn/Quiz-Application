@@ -46,7 +46,7 @@ var quizController = (function () {
             }
             optionsArr = [];
 
-            isChecked = false;
+            // isChecked = false;
             for (var i = 0; i < opts.length; i++) {
                 if (opts[i].value != "") {
                     optionsArr.push(opts[i].value);
@@ -60,32 +60,34 @@ var quizController = (function () {
                     isChecked = true;
                 }
             }
-
+            
             // [{id: 0} {id: 1}]
             if (questionLocalStorage.getQuestionCollection().length > 0) {
                 questionId = questionLocalStorage.getQuestionCollection()[questionLocalStorage.getQuestionCollection().length - 1].id + 1;
             } else {
                 questionId = 0;
             }
-
+            
             if (newQuestText.value !== "") {
                 if (optionsArr.length > 1) {
                     if (isChecked) {
                         newQuestion = new Question(questionId, newQuestText.value, optionsArr, corrAns);
-
+                        
                         getStoredQuests = questionLocalStorage.getQuestionCollection();
-
+                        
                         getStoredQuests.push(newQuestion);
-
+                        
                         questionLocalStorage.setQuestionCollection(getStoredQuests);
-
+                        
                         newQuestText.value = "";
-
+                        
                         for (var x = 0; x < opts.length; x++) {
                             opts[x].value = "";
                             opts[x].previousElementSibling.checked = false;
                         }
                         console.log(questionLocalStorage.getQuestionCollection());
+                        return true;
+
                     } else {
                         alert('You missed to check correct answer, or you checked answer without value');
                         return false;
@@ -117,20 +119,20 @@ var UIController = (function () {
         questionDeleteBtn: document.getElementById("question-delete-btn"),
         questionClearBtn: document.getElementById("questions-clear-btn")
     };
-
+    
     return {
         getDomItems: domItems,
         addInputsDynamically: function () {
             var addInput = function () {
                 var inputHTML, z;
-
+                
                 z = document.querySelectorAll('.admin-option').length;
                 inputHTML = '<div class="admin-options-wrapper"><input type="radio" class="admin-option-' + z + '" name="answer" value="' + z + '"><input type="text" class="admin-option admin-option-' + z + '" value=""></div>';
-
+                
                 domItems.adminOptionsContainer.insertAdjacentHTML('beforeend', inputHTML);
-
+                
                 domItems.adminOptionsContainer.lastElementChild.previousElementSibling.lastElementChild.removeEventListener('focus', addInput);
-
+                
                 domItems.adminOptionsContainer.lastElementChild.lastElementChild.addEventListener('focus', addInput);
             }
             domItems.adminOptionsContainer.lastElementChild.lastElementChild.addEventListener('focus', addInput);
@@ -144,32 +146,32 @@ var UIController = (function () {
 
             for (var i = 0; i < getQuestions.getQuestionCollection().length; i++) {
                 numberingArr.push(i + 1);
-
+                
                 questHTML = ' <p><span>' + numberingArr[i] + '. ' + getQuestions.getQuestionCollection()[i].questionText + '</span><button id="question-' + getQuestions.getQuestionCollection()[i].id + '">Edit</button></p>';
-
+                
                 domItems.insertedQuestionWrapper.insertAdjacentHTML('afterbegin', questHTML);
             }
         },
         editQuestionList: function (event, storageQuestList, addInpsDynFn, updateQuestionListFn) {
-
+            
             var getId, getStorageQuestList, foundItem, placeInArr, optionHTML;
-
+            
             if ('question-'.indexOf(event.target.id)) {
                 getId = parseInt(event.target.id.split('-')[1]);
-
+                
                 getStorageQuestList = storageQuestList.getQuestionCollection();
-
+                
                 for (var i = 0; i < getStorageQuestList.length; i++) {
                     if (getStorageQuestList[i].id === getId) {
                         foundItem = getStorageQuestList[i];
-
-                        placeInArr = 1;
+                        
+                        placeInArr = i;
                     }
                 }
                 // console.log(foundItem, placeInArr);
                 domItems.newQuestText.value = foundItem.questionText;
                 domItems.adminOptionsContainer.innerHTML = '';
-
+                
                 optionHTML = '';
                 for (var x = 0; x < foundItem.options.length; x++) {
                     optionHTML += '<div class="admin-options-wrapper"><input type="radio" class="admin-option-' + x + '" name="answer" value="' + x + '"><input type="text" class="admin-option admin-option-' + x + '" value="' + foundItem.options[x] + '"></div>';
@@ -181,51 +183,57 @@ var UIController = (function () {
                 domItems.questionDeleteBtn.style.visibility = 'visible';
                 domItems.questionInsertBtn.style.visibility = 'hidden';
                 domItems.questionClearBtn.style.pointerEvents = 'none';
-
+                
                 addInpsDynFn();
+                
+                // After updation & deletion of a ques, we need to get to the default view
+                var backDefaultView = function () {
+                    var updatedOptions;
+                    domItems.newQuestText.value = '';
 
+                    updatedOptions = document.querySelectorAll(".admin-option");
+                    for (var i = 0; i < updatedOptions.length; i++) {
+                        updatedOptions[i].value = '';
+                        updatedOptions[i].previousElementSibling.checked = false;
+                    }
+                    domItems.questionUpdateBtn.style.visibility = 'hidden';
+                    domItems.questionDeleteBtn.style.visibility = 'hidden';
+                    domItems.questionInsertBtn.style.visibility = 'visible';
+                    domItems.questionClearBtn.style.pointerEvents = '';
+                    
+                    updateQuestionListFn(storageQuestList);
+                }
+                
                 var updateQuestion = function () {
                     var newOptions, optionEls;
                     newOptions = [];
-
+                    
                     optionEls = document.querySelectorAll(".admin-option");
-
+                    
                     foundItem.questionText = domItems.newQuestText.value;
-
+                    
                     foundItem.correctAnswer = '';
-
+                    
                     for (var i = 0; i < optionEls.length; i++) {
                         if (optionEls[i].value != '') {
                             newOptions.push(optionEls[i].value);
-
-
-
+                            
                             if (optionEls[i].previousElementSibling.checked) {
                                 foundItem.correctAnswer = optionEls[i].value;
                             }
                         }
                     }
                     foundItem.options = newOptions;
-
+                    
                     if (foundItem.questionText != '') {
                         if (foundItem.options.length > 1) {
-                            if (foundItem.correctAnswer != '') {
+                            if (foundItem.correctAnswer !== '') {
                                 getStorageQuestList.splice(placeInArr, 1, foundItem);
-
+                                
                                 storageQuestList.setQuestionCollection(getStorageQuestList);
-
-                                domItems.newQuestText.value = '';
-
-                                for(var i = 0; i < optionEls.length; i++){
-                                    optionEls[i].value = '';
-                                    optionEls[i].previousElementSibling.checked = false;
-                                }
-                                domItems.questionUpdateBtn.style.visibility = 'hidden';
-                domItems.questionDeleteBtn.style.visibility = 'hidden';
-                domItems.questionInsertBtn.style.visibility = 'visible';
-                domItems.questionClearBtn.style.pointerEvents = '';
-
-                updateQuestionListFn(storageQuestList);
+                                
+                                backDefaultView();
+                                
                             } else {
                                 alert('You missed to check correct answer, or you checked answer without value');
                             }
@@ -237,6 +245,16 @@ var UIController = (function () {
                     }
                 }
                 domItems.questionUpdateBtn.onclick = updateQuestion;
+                
+                var deleteQuestion = function () {
+                    // console.log('works')
+                    getStorageQuestList.splice(placeInArr, 1);
+                    
+                    storageQuestList.setQuestionCollection(getStorageQuestList);
+
+                    backDefaultView();
+                }
+                domItems.questionDeleteBtn.onclick = deleteQuestion;
             }
         }
     };
@@ -245,21 +263,21 @@ var UIController = (function () {
 // *********** CONTROLLER **********************
 var controller = (function (quizCtrl, UICtrl) {
     var selectedDomItems = UIController.getDomItems;
-
+    
     UICtrl.addInputsDynamically();
     UICtrl.createQuestionList(quizController.getQuestionLocalStorage);
-
+    
     selectedDomItems.questionInsertBtn.addEventListener('click', function () {
-
+        
         var adminOptions = document.querySelectorAll('.admin-option');
-
+        
         var checkBoolean = quizCtrl.addQuestionOnLocalStorage(selectedDomItems.newQuestText, adminOptions);
-
+        
         if (checkBoolean) {
-            UICtrl.createQuestinList(quizController.getQuestionLocalStorage);
+            UICtrl.createQuestionList(quizCtrl.getQuestionLocalStorage);
         }
     });
-
+    
     selectedDomItems.insertedQuestionWrapper.addEventListener('click', function (e) {
         UICtrl.editQuestionList(e, quizController.getQuestionLocalStorage, UICtrl.addInputsDynamically, UICtrl.createQuestionList);
     })
