@@ -108,12 +108,16 @@ var quizController = (function () {
             }
         },
 
-        checkAnswer: function(ans) {
-            if(questionLocalStorage.getQuestionCollection()[quizProgress.questionIndex].correctAnswer === ans.textContent) {
+        checkAnswer: function (ans) {
+            if (questionLocalStorage.getQuestionCollection()[quizProgress.questionIndex].correctAnswer === ans.textContent) {
                 return true;
-            } else{
+            } else {
                 return false;
             }
+        },
+
+        isFinished: function () {
+            return quizProgress.questionIndex + 1 === questionLocalStorage.getQuestionCollection().length;
         }
     }
 })();
@@ -137,11 +141,12 @@ var UIController = (function () {
         askedQuestText: document.getElementById("asked-question-text"),
         quizOptionsWrapper: document.querySelector('.quiz-options-wrapper'),
         progressBar: document.querySelector("progress"),
-        progressPar:  document.getElementById("progress"),
+        progressPar: document.getElementById("progress"),
         instAnsContainer: document.querySelector(".instant-answer-container"),
         instAnsText: document.getElementById('instant-answer-text'),
         instAnsDiv: document.getElementById('instant-answer-wrapper'),
-        emotionIcon: document.getElementById('emotion')
+        emotionIcon: document.getElementById('emotion'),
+        nextQuesBtn: document.getElementById('next-question-btn')
     };
 
     return {
@@ -301,18 +306,18 @@ var UIController = (function () {
             }
         },
 
-        displayQuestion: function(storageQuestList, progress) {
+        displayQuestion: function (storageQuestList, progress) {
 
             var newOptionHTML, characterArr;
 
             characterArr = ['A', 'B', 'C', 'D', 'E', 'F'];
-            if(storageQuestList.getQuestionCollection().length > 0){
+            if (storageQuestList.getQuestionCollection().length > 0) {
 
                 domItems.askedQuestText.textContent = storageQuestList.getQuestionCollection()[progress.questionIndex].questionText;
 
                 domItems.quizOptionsWrapper.innerHTML = '';
 
-                for(var i = 0; i < storageQuestList.getQuestionCollection()[progress.questionIndex].options.length; i++) {
+                for (var i = 0; i < storageQuestList.getQuestionCollection()[progress.questionIndex].options.length; i++) {
 
                     newOptionHTML = '<div class="choice-' + i + '"><span class="choice-' + i + '">' + characterArr[i] + '</span><p class="choice-' + i + '">' + storageQuestList.getQuestionCollection()[progress.questionIndex].options[i] + '</p></div>';
 
@@ -321,8 +326,8 @@ var UIController = (function () {
             }
         },
 
-        displayProgress: function(storageQuestList, progress) {
-            
+        displayProgress: function (storageQuestList, progress) {
+
             domItems.progressBar.max = storageQuestList.getQuestionCollection().length;
 
             domItems.progressBar.value = progress.questionIndex + 1;
@@ -330,13 +335,13 @@ var UIController = (function () {
             domItems.progressPar.textContent = (progress.questionIndex + 1) + '/' + storageQuestList.getQuestionCollection().length;
         },
 
-        newDesign: function(ansResult, selectedAnswer) {
+        newDesign: function (ansResult, selectedAnswer) {
 
             var twoOptions, index;
 
             index = 0;
 
-            if(ansResult) {
+            if (ansResult) {
                 index = 1;
             }
 
@@ -359,6 +364,12 @@ var UIController = (function () {
 
 
             selectedAnswer.previousElementSibling.style.backgroundColor = twoOptions.optionSpanBg[index];
+        },
+
+        resetDesign: function () {
+            domItems.quizOptionsWrapper.style.cssText = ""
+
+            domItems.instAnsContainer.style.opacity = "0";
         }
     };
 })();
@@ -393,18 +404,41 @@ var controller = (function (quizCtrl, UICtrl) {
 
     UICtrl.displayProgress(quizCtrl.getQuestionLocalStorage, quizController.getQuizProgress);
 
-    selectedDomItems.quizOptionsWrapper.addEventListener('click', function(e) {
+    selectedDomItems.quizOptionsWrapper.addEventListener('click', function (e) {
         var updatedOptionsDiv = selectedDomItems.quizOptionsWrapper.querySelectorAll('div');
 
-        for(var i = 0; i < updatedOptionsDiv.length; i++) {
+        for (var i = 0; i < updatedOptionsDiv.length; i++) {
 
-            if(e.target.className === 'choice-' + i) {
+            if (e.target.className === 'choice-' + i) {
                 // console.log(e.target.className);
                 var answer = document.querySelector('.quiz-options-wrapper div p.' + e.target.className);
 
                 var answerResult = quizCtrl.checkAnswer(answer);
 
                 UICtrl.newDesign(answerResult, answer);
+
+                if(quizCtrl.isFinished()) {
+                    selectedDomItems.nextQuesBtn.textContent = 'Finish';
+                }
+
+                var nextQuestion = function (questData, progress) {
+                    if (quizCtrl.isFinished()) {
+                        // Finish quiz
+                        console.log('Finished');
+                    } else {
+                        UICtrl.resetDesign();
+
+                        quizCtrl.getQuizProgress.questionIndex++;
+
+                        UICtrl.displayQuestion(quizController.getQuestionLocalStorage, quizCtrl.getQuizProgress);
+
+                        UICtrl.displayProgress(quizCtrl.getQuestionLocalStorage, quizController.getQuizProgress);
+                    }
+                }
+
+                selectedDomItems.nextQuesBtn.onclick = function () {
+                    nextQuestion(quizCtrl.getQuestionLocalStorage, quizCtrl.getQuizProgress);
+                }
             }
         }
     })
