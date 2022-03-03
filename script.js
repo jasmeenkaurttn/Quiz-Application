@@ -137,7 +137,11 @@ var UIController = (function () {
         askedQuestText: document.getElementById("asked-question-text"),
         quizOptionsWrapper: document.querySelector('.quiz-options-wrapper'),
         progressBar: document.querySelector("progress"),
-        progressPar:  document.getElementById("progress")
+        progressPar:  document.getElementById("progress"),
+        instAnsContainer: document.querySelector(".instant-answer-container"),
+        instAnsText: document.getElementById('instant-answer-text'),
+        instAnsDiv: document.getElementById('instant-answer-wrapper'),
+        emotionIcon: document.getElementById('emotion')
     };
 
     return {
@@ -324,6 +328,37 @@ var UIController = (function () {
             domItems.progressBar.value = progress.questionIndex + 1;
 
             domItems.progressPar.textContent = (progress.questionIndex + 1) + '/' + storageQuestList.getQuestionCollection().length;
+        },
+
+        newDesign: function(ansResult, selectedAnswer) {
+
+            var twoOptions, index;
+
+            index = 0;
+
+            if(ansResult) {
+                index = 1;
+            }
+
+            twoOptions = {
+                instAnswerText: ['This is a wrong answer', 'This is a correct answer'],
+                instAnswerClass: ['red', 'green'],
+                emotionType: ['images/sad.png', 'images/happy.png'],
+                optionSpanBg: ['rgba(200,0,0,0.7)', 'rgba(0,250,0,0.2)']
+            };
+            // options transparency is changed & disabled after selecting an option
+            domItems.quizOptionsWrapper.style.cssText = "opacity: 0.6; pointer-events: none;"
+
+            domItems.instAnsContainer.style.opacity = "1";
+
+            domItems.instAnsText.textContent = twoOptions.instAnswerText[index];
+
+            domItems.instAnsDiv.className = twoOptions.instAnswerClass[index];
+
+            domItems.emotionIcon.setAttribute('src', twoOptions.emotionType[index]);
+
+
+            selectedAnswer.previousElementSibling.style.backgroundColor = twoOptions.optionSpanBg[index];
         }
     };
 })();
@@ -367,7 +402,9 @@ var controller = (function (quizCtrl, UICtrl) {
                 // console.log(e.target.className);
                 var answer = document.querySelector('.quiz-options-wrapper div p.' + e.target.className);
 
-                quizCtrl.checkAnswer(answer);
+                var answerResult = quizCtrl.checkAnswer(answer);
+
+                UICtrl.newDesign(answerResult, answer);
             }
         }
     })
