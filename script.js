@@ -486,7 +486,23 @@ var UIController = (function () {
 
                 domItems.resultsListWrapper.insertAdjacentHTML('afterbegin', resultHTML);
             }
+        },
 
+        deleteResult: function(event, userData) {
+            var getId, personsArr;
+
+            personsArr = userData.getPersonData();
+
+            if('delete-result-btn_'.indexOf(event.target.id)) {
+                getId = parseInt(event.target.id.split('_')[1]);
+
+                for(var i = 0; i < personsArr.length; i++) {
+                    if(personsArr[i].id === getId) {
+                        personsArr.splice(i, 1);
+                        userData.setPersonData(personsArr);
+                    }
+                }
+            }
         }
     };
 })();
@@ -575,5 +591,11 @@ var controller = (function (quizCtrl, UICtrl) {
     });
 
     UICtrl.addResultOnPanel(quizCtrl.getPersonLocalStorage);
+
+    selectedDomItems.resultsListWrapper.addEventListener('click', function(e) {
+        UICtrl.deleteResult(e, quizCtrl.getPersonLocalStorage);
+
+        UICtrl.addResultOnPanel(quizCtrl.getPersonLocalStorage);
+    })
 
 })(quizController, UIController);
