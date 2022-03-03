@@ -49,7 +49,7 @@ var quizController = (function () {
     var adminFullName = ['Jasmeen', 'Kaur'];
 
     var currPersonData = {
-        fullname: ['Nick', 'Doe'],
+        fullname: [],
         score: 0
     };
 
@@ -141,6 +141,7 @@ var quizController = (function () {
 
         checkAnswer: function (ans) {
             if (questionLocalStorage.getQuestionCollection()[quizProgress.questionIndex].correctAnswer === ans.textContent) {
+                currPersonData.score++; // score is increased by 1 as answer is correct
                 return true;
             } else {
                 return false;
@@ -172,7 +173,9 @@ var quizController = (function () {
 
         getCurrPersonData: currPersonData,
 
-        getAdminFullName: adminFullName
+        getAdminFullName: adminFullName,
+
+        getPersonLocalStorage: personLocalStorage
     }
 })();
 
@@ -191,6 +194,7 @@ var UIController = (function () {
         questionUpdateBtn: document.getElementById("question-update-btn"),
         questionDeleteBtn: document.getElementById("question-delete-btn"),
         questionClearBtn: document.getElementById("questions-clear-btn"),
+        resultsListWrapper: document.querySelector('.results-list-wrapper'),
 
         // ***************************Quiz Section Elements********
         quizSection: document.querySelector('.quiz-container'),
@@ -210,6 +214,10 @@ var UIController = (function () {
         startQuizBtn: document.getElementById('start-quiz-btn'),
         firstNameInput: document.getElementById('firstname'),
         lastNameInput: document.getElementById('lastname'),
+
+        // *****************FINAL RESULT **********************
+        finalResultSection: document.querySelector('.final-result-container'),
+        finalScoreText: document.getElementById('final-score-text')
     };
 
     return {
@@ -458,6 +466,27 @@ var UIController = (function () {
             } else { // when user is not registered for quiz, then show alert 
                 alert('Please enter your firstname and lastname');
             }
+        },
+
+        finalResult: function (currPerson) {
+            domItems.finalScoreText.textContent = currPerson.fullname[0] + ' ' + currPerson.fullname[1] + ', your final score is ' + currPerson.score;
+
+            domItems.quizSection.style.display = 'none';
+
+            domItems.finalResultSection.style.display = 'block';
+        },
+
+        addResultOnPanel: function(userData) {
+            var resultHTML;
+
+            domItems.resultsListWrapper.innerHTML = '';
+
+            for(var i = 0; i < userData.getPersonData().length; i++) {
+                resultHTML = '<p class="person person-' + i + '"><span class="person-' + i + '">' + userData.getPersonData()[i].firstname  + ' ' + userData.getPersonData()[i].lastname + '- ' +  userData.getPersonData()[i].score + 'Points</span><button id="delete-result-btn_' + userData.getPersonData()[i].id + '" class="delete-result-btn">Delete</button></p>';
+
+                domItems.resultsListWrapper.insertAdjacentHTML('afterbegin', resultHTML);
+            }
+
         }
     };
 })();
@@ -513,7 +542,8 @@ var controller = (function (quizCtrl, UICtrl) {
                     if (quizCtrl.isFinished()) {
                         // Finish quiz
                         quizCtrl.addPerson();
-                        console.log('Finished');
+
+                        UICtrl.finalResult(quizCtrl.getCurrPersonData);
                     } else {
                         UICtrl.resetDesign();
 
@@ -536,12 +566,14 @@ var controller = (function (quizCtrl, UICtrl) {
         UICtrl.getFullName(quizCtrl.getCurrPersonData, quizCtrl.getQuestionLocalStorage, quizCtrl.getAdminFullName);
     });
 
-    selectedDomItems.lastNameInput.addEventListener('focus', function() {
-        selectedDomItems.lastNameInput.addEventListener('keypress', function(e) {
-            if(e.keyCode === 13) {
+    selectedDomItems.lastNameInput.addEventListener('focus', function () {
+        selectedDomItems.lastNameInput.addEventListener('keypress', function (e) {
+            if (e.keyCode === 13) {
                 UICtrl.getFullName(quizCtrl.getCurrPersonData, quizCtrl.getQuestionLocalStorage, quizCtrl.getAdminFullName);
             }
         })
     });
+
+    UICtrl.addResultOnPanel(quizCtrl.getPersonLocalStorage);
 
 })(quizController, UIController);
